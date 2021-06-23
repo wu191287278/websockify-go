@@ -11,7 +11,7 @@ import (
 
 func main() {
 	address := flag.String("address", ":8888", "Server port")
-	vncAddress := flag.String("target", "localhost:5900", "Vnc Server port")
+	vncAddress := flag.String("target", "localhost:5900", "Target port")
 	flag.Parse()
 	http.Handle("/websockify", websocket.Handler(func(wsconn *websocket.Conn) {
 		defer wsconn.Close()
@@ -19,7 +19,7 @@ func main() {
 		var address = *vncAddress
 		conn, err := d.DialContext(wsconn.Request().Context(), "tcp", address)
 		if err != nil {
-			log.Printf("[%s] [VNC_ERROR] [%v]", address, err)
+			log.Printf("[%s] [ERROR] [%v]", address, err)
 			return
 		}
 		defer conn.Close()
@@ -27,10 +27,10 @@ func main() {
 		go func() {
 			io.Copy(wsconn, conn)
 			wsconn.Close()
-			log.Printf("[%s] [VNC_SESSION_CLOSED]", address)
+			log.Printf("[%s] [SESSION_CLOSED]", address)
 		}()
 		io.Copy(conn, wsconn)
-		log.Printf("[%s] [VNC_CLIENT_DISCONNECTED]", address)
+		log.Printf("[%s] [CLIENT_DISCONNECTED]", address)
 	}))
 	log.Printf("Http listening on %s \n", *address)
 
